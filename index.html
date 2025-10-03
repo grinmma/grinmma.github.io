@@ -1,42 +1,808 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title> Мой первый сайт</title>
-    <link type="text/css" rel="stylesheet" href="stile.css">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мясной Бор. Эхо войны</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            overflow: hidden;
+        }
+        
+        #container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+        
+        #intro-panel, #outro-panel, #library-panel, #exhibit-detail-panel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            pointer-events: auto;
+            z-index: 15;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+        }
+        
+        #outro-panel, #library-panel, #exhibit-detail-panel {
+            display: none;
+        }
+        
+        .panel-title {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #e6b17e;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .panel-text {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        .panel-btn {
+            background: #8b4513;
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        
+        .panel-btn:hover {
+            background: #a0522d;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+        }
+        
+        .nav-btn {
+            background: #8b4513;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background: #a0522d;
+        }
+        
+        .nav-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        
+        #info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 400px;
+            max-height: 70vh;
+            overflow-y: auto;
+            display: none;
+            pointer-events: auto;
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        #close-btn, #library-close-btn, #exhibit-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            color: #e6b17e;
+        }
+        
+        #info-title {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #e6b17e;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        
+        #info-description {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px 50px;
+            border-radius: 10px;
+            font-size: 24px;
+            z-index: 100;
+        }
+        
+        .transition-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            opacity: 0;
+            z-index: 20;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        
+        #library-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #8b4513;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+            pointer-events: auto;
+            z-index: 10;
+        }
+        
+        #library-btn:hover {
+            background: #a0522d;
+        }
+        
+        .library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .exhibit-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .exhibit-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+        }
+        
+        .exhibit-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #8b4513, #a0522d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .exhibit-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        
+        .exhibit-title {
+            font-size: 16px;
+            color: #e6b17e;
+            margin-bottom: 5px;
+        }
+        
+        .exhibit-room {
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        #exhibit-detail-content {
+            text-align: left;
+            margin-top: 20px;
+        }
+        
+        #exhibit-detail-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #8b4513, #a0522d);
+        }
+        
+        #exhibit-detail-title {
+            font-size: 24px;
+            color: #e6b17e;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        
+        #exhibit-detail-description {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        #exhibit-detail-room {
+            font-size: 14px;
+            color: #aaa;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-
-<!--меню-->
-<div class="menu">
-    <ul>
-        <li class="menu_item"><a href="#">Главная</a></li>
-        <li class="menu_item"><a href="profile.html">Профиль</a></li>
-        <li class="menu_item"><a href="galerey.html">Галерея</a></li>
-        <li class="menu_item"><a href="contacts.html">Контакты</a></li>
-    </ul>
-</div>
-<!--конец блока меню-->
-<div class="main">
-    <h1 align="center">Где почитать</h1> <br>
-    <p>
-
-    <ol>
-        <li><a href="https://htmlbook.ru/">Хтмл бук</a></li>
-        <li><a href="https://htmlacademy.ru/">Хтм академия</a></li>
-    </ol>
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
-    </p>
-    <div class="div-pic">
-        <img src="https://avatars.mds.yandex.net/i?id=2683108ef28498d0daeb03dbc97f07e032c9c0c4-10511855-images-thumbs&n=13"
-             alt="Здесь была картинка" width=20% height=20%>
+    <div id="container"></div>
+    
+    <div id="ui">
+        <div id="intro-panel">
+            <h2 class="panel-title">Мясной Бор. Эхо войны</h2>
+            <p class="panel-text">Эта экспозиция — не просто собрание артефактов. Это память, которую принесли сюда дети. Вещи, найденные их семьями в Мясном Бору, поднятые в ходе поисковых операций или бережно хранимые в домашних архивах, становятся мостом между прошлым и настоящим. Здесь — личные истории, судьбы, следы тех, кто сражался на новгородской земле в годы Великой Отечественной войны. Каждая вещь — отголосок великой боли и великого подвига.</p>
+            <p class="panel-text">Приглашаем вас в виртуальное путешествие по этой выставке — чтобы увидеть, услышать и сохранить.</p>
+            <button class="panel-btn" id="start-btn">Начать осмотр</button>
+        </div>
+        
+        <div id="outro-panel">
+            <h2 class="panel-title">Спасибо за то, что были с нами</h2>
+            <p class="panel-text">Вы прошли путь через историю, рассказанную не в учебниках, а через личные вещи, воспоминания и молчаливые свидетели войны. Эта выставка — не о технике, не о сражениях. Она — о людях. О тех, кто сражался, ждал, терял и побеждал. О тех, чья память живёт в каждой каске, фляге, письме, рисунке.</p>
+            <p class="panel-text">Мы верим: пока хранятся эти вещи — живы и те, кому они принадлежали.</p>
+            <p class="panel-text">А значит, жива и наша благодарность. Жива память.</p>
+            <p class="panel-text">До новых встреч. И пусть никогда не повторится то, о чём мы сегодня вспоминали.</p>
+            <button class="panel-btn" id="restart-btn">Начать заново</button>
+        </div>
+        
+        <div id="library-panel">
+            <span id="library-close-btn">×</span>
+            <h2 class="panel-title">Библиотека экспонатов</h2>
+            <p class="panel-text">Здесь вы можете просмотреть все экспонаты выставки. Нажмите на любой из них, чтобы узнать больше.</p>
+            <div class="library-grid" id="library-grid"></div>
+        </div>
+        
+        <div id="exhibit-detail-panel">
+            <span id="exhibit-close-btn">×</span>
+            <img id="exhibit-detail-image" src="" alt="Изображение экспоната">
+            <div id="exhibit-detail-content">
+                <h2 id="exhibit-detail-title">Название экспоната</h2>
+                <p id="exhibit-detail-room">Зал: Название зала</p>
+                <p id="exhibit-detail-description">Описание экспоната будет здесь.</p>
+            </div>
+        </div>
+        
+        <button id="library-btn">Полная библиотека</button>
+        
+        <div id="controls">
+            <button class="nav-btn" id="prev-btn">← Назад</button>
+            <button class="nav-btn" id="next-btn">Вперед →</button>
+            <button class="nav-btn" id="outro-btn">Завершить осмотр</button>
+        </div>
+        
+        <div id="info-panel">
+            <span id="close-btn">×</span>
+            <h2 id="info-title">Название объекта</h2>
+            <p id="info-description">Описание объекта будет здесь.</p>
+        </div>
+        
+        <div id="loading">Загрузка панорамы...</div>
+        
+        <div class="transition-overlay" id="transition-overlay"></div>
     </div>
-</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('container').appendChild(renderer.domElement);
+
+        const rooms = [
+            {
+                id: 0,
+                name: "Зал 1: Оружие и защита",
+                texture: "img/1.jpg",
+                hotspots: [
+                    { 
+                        title: "Немецкие каски с пулевыми отверстиями", 
+                        description: "Эти немецкие каски с пулевыми отверстиями — не просто предметы военного снаряжения, но и свидетельства о судьбах тех, кто носил их на поле боя. Пулевые отверстия говорят о жестоких столкновениях, где даже лучшая защита не всегда могла спасти. Несмотря на конструктивные особенности, казавшиеся идеальными для защиты головы, каски не смогли спасти своих владельцев от ужасов войны. Козырьки на касках — характерный атрибут немецкой военной элиты, символизируют принадлежность их владельцев к армейской иерархии, а их пробитая поверхность — разрушение и смерть, которые следовали за каждым выстрелом. Эти каски — символ не только гибели, но и несчастных жертв войны, чьи жизни оборвались слишком рано.",
+                        image: "img/photo_2025-09-30_15-32-57.jpg"
+                    },
+                    { 
+                        title: "Гермошлем летчика", 
+                        description: "Гермошлем — это не просто головной убор, а элемент жизненно важной экипировки для летчиков, особенно для операторов боевых машин. Он был спроектирован с учётом жестких условий воздушных операций, когда каждый манёвр или снижение высоты могли стать решающими для судьбы пилота. Этот шлем стал защитой в моменты наибольшей угрозы, когда враги атаковали с воздуха. Он был не только физической защитой, но и символом мужества и профессионализма, как и весь труд солдат, выполнявших важнейшие задачи на фронте. В нашем музее этот шлем напоминает о тех, кто сражался за победу на высоте и о том, как сложно было находиться между небом и землей.",
+                        image: "img/photo_2025-09-30_20-05-06.jpg"
+                    },
+                    { 
+                        title: "Элементы стрелкового вооружения", 
+                        description: "На витрине представлены различные элементы стрелкового оружия, такие как пули от автоматов, части затворов винтовок и ракетница — сигнальное оружие, использовавшееся для связи между подразделениями. Эти предметы дают нам представление о тех орудиях, которые были основным инструментом в руках солдат на протяжении всей войны. Они отражают самую суть боевых действий: каждый выстрел, каждая граната, каждая пуля могут изменить ход сражения. Взгляд на эти артефакты помогает понять, с каким упорством и самоотверженностью солдаты использовали всё доступное вооружение для достижения победы. Эти предметы также напоминают о тяжелых последствиях войны, где каждая деталь оружия стала частью судьбы миллионов людей.",
+                        image: "img/photo_2025-09-30_19-40-37.jpg"
+                    },
+                    { 
+                        title: "Футляр для пулеметной ленты", 
+                        description: "Этот футляр был предназначен для хранения пулеметных лент — важного элемента вооружения, который позволял пулеметам вести огонь на протяжении длительного времени. В условиях войны, где каждый патрон и каждая деталь имели значение, такие футляры играли ключевую роль в поддержании боеспособности войск. Этот предмет отражает практическую сторону войны, где каждое снаряжение, каждая деталь имели значение в жестоких сражениях. Они стали частью того механизма, который обеспечивал победу. В футляре хранились не только патроны, но и память о солдатах, которые неустанно защищали свою землю, не щадя своих сил.",
+                        image: "img/photo_2025-09-30_19-44-05.jpg"
+                    },
+                    { 
+                        title: "Масленка для смазки орудия", 
+                        description: "В условиях войны каждая деталь экипировки, каждый элемент снаряжения играли важнейшую роль. Масленка для смазки орудий была одной из таких незаметных, но крайне необходимых вещей. Без должной смазки механизмы быстро выходили из строя, а оружие теряло свою боеспособность. Эта масленка напоминает о том, что даже в самых тяжелых условиях войны солдаты должны были заботиться о своих средствах защиты и атакующих силах. Этот предмет стал символом того, как важно было поддерживать порядок в каждом аспекте войны, чтобы не дать врагу шанса на победу.",
+                        image: "img/photo_2025-09-30_19-43-41.jpg"
+                    }
+                ]
+            },
+            {
+                id: 1,
+                name: "Зал 1: Личные вещи и быт",
+                texture: "img/2.jpg",
+                hotspots: [
+                    { 
+                        title: "Быт в условиях фронта", 
+                        description: "В условиях постоянных боевых действий и тяжелых потерь, жизнь солдат продолжалась, и иногда она находила место для личных моментов. Один из таких предметов — керосиновая лампа, которая освещала письма, написанные солдатами в самых трудных моментах войны. Несмотря на жестокие условия, солдаты писали домой, на фронте были сохранены самые простые радости, такие как весточка от родных. Эта лампа символизирует малые, но важные вещи, которые поддерживали моральное состояние бойцов, когда вокруг бушевали бои. Время, которое они тратили на письма, было важным для их внутреннего мира, и эта лампа стала символом того света надежды, который они несли в своих сердцах, даже в самых темных уголках войны.",
+                        image: "img/photo_2025-09-30_19-41-09.jpg"
+                    },
+                    { 
+                        title: "Фляга солдата", 
+                        description: "Фляга, пережившая огонь и пули, стала немым свидетелем судьбы солдата, попавшего под огонь врага. О том, что произошло с её владельцем, мы можем лишь догадываться. Возможно, эта фляга была последним, к чему он прикоснулся. Следы деформации, пробоины — всё это говорит о близости смерти, о том, как хрупка была жизнь на передовой. Этот предмет хранит молчаливое напоминание о цене Победы, о тех, кто не вернулся, оставив после себя только вещи, наполненные болью и памятью.",
+                        image: "img/photo_2025-09-30_19-46-53.jpg"
+                    },
+                    { 
+                        title: "Противогаз", 
+                        description: "Противогазы использовались крайне редко, но их присутствие в арсенале бойца было необходимым. Особенно в условиях, когда фронт затягивался дымом, горели леса, использовались зажигательные снаряды. Этот экспонат символизирует страх перед невидимым врагом — химической атакой, дымовой завесой, удушающей гарью. Надетый на бойца, он делал его лицо безымянным, превращал человека в силу, защищающую Родину любой ценой. Этот противогаз — знак готовности солдата ко всему, что могла принести война.",
+                        image: "img/photo_2025-09-30_19-43-48.jpg"
+                    },
+                    { 
+                        title: "Ложка солдата", 
+                        description: "\"Ложку, трубку и жену не отдам никому\" — шуточная, но глубокая фраза времён войны. Ложка была личной вещью, как паспорт или орден. Потерять её — значит остаться без еды, без привычного ритуала. Её не давали вторую. Она была у каждого своя, и по ней можно было узнать бойца. Эта ложка — символ солдатского быта, солдатской души, верности и заботы о жизни в её самом простом проявлении.",
+                        image: "img/photo_2025-09-30_15-32-32.jpg"
+                    },
+                    { 
+                        title: "Тигель", 
+                        description: "Тигель — металлическая посудина, в которой солдаты разогревали еду на костре. В условиях окопов, холодов, сырости и постоянного риска, горячая пища становилась настоящим спасением. Этот предмет быта напоминает о самом ценном — об источнике тепла, о моменте уюта, о дыхании жизни в самых нечеловеческих условиях.",
+                        image: "img/photo_2025-09-30_19-40-54.jpg"
+                    }
+                ]
+            },
+            {
+                id: 2,
+                name: "Зал 1: Оборудование и снаряжение",
+                texture: "img/3.jpg",
+                hotspots: [
+                    { 
+                        title: "Крупнокалиберное дуло от гаубицы", 
+                        description: "Эта часть гаубицы — символ мощи советской артиллерии. В отличие от пушек, размещённых на танках, гаубицы применялись для нанесения ударов по дальним и укреплённым позициям противника. Их задача — ломать оборону, расчищать путь пехоте. Массивные заряды, грохот выстрелов, вибрация земли — всё это сопровождало её работу. Этот экспонат напоминает о тех боях, где исход операции решала не только храбрость, но и точный артиллерийский расчёт.",
+                        image: "img/photo_2025-09-30_19-40-37.jpg"
+                    },
+                    { 
+                        title: "Кирка и лопата", 
+                        description: "Кирка и лопата — оружие не менее важное, чем винтовка. С их помощью солдаты рыли окопы, возводили блиндажи, укрепляли позиции. Без этих инструментов невозможно было выжить на передовой. Они были спутниками в каждый день, в каждую ночь, под огнём и в ливень. Этот комплект напоминает о том, что война — это не только атаки, но и тяжкий труд, кропотливая работа, требующая выносливости и терпения.",
+                        image: "img/photo_2025-09-30_20-04-19.jpg"
+                    },
+                    { 
+                        title: "Немецкий ботинок", 
+                        description: "Немецкий ботинок — предмет, говорящий о другом солдате, чужом, но таком же уязвимом. В отличие от советских солдат, носивших сапоги и валенки, немцы использовали ботинки с обмотками. Он служил долго, но не всегда спасал. Этот ботинок, найденный на месте боёв, может рассказать о пути, который прошёл его владелец — пути, приведшем его на новгородскую землю, где он остался навсегда.",
+                        image: "img/photo_2025-09-30_19-41-13.jpg"
+                    },
+                    { 
+                        title: "Подкова", 
+                        description: "Подкова — символ мирного труда и, одновременно, ключевой элемент войны. В условиях нехватки горючего, лошади стали основой снабжения. Они тянули пушки, повозки, эвакуировали раненых. Подкова в экспозиции — это напоминание о животных, прошедших войну вместе с человеке, о тягловой силе, без которой победа была бы невозможна.",
+                        image: "img/photo_2025-09-30_20-04-19.jpg"
+                    },
+                    { 
+                        title: "Немецкий ремень", 
+                        description: "Этот ремень — часть немецкой военной экипировки. Он говорит о дисциплине, порядке, о том, как тщательно враг готовился к войне. Но здесь, в музейной тишине, он теряет свою воинственность, становясь просто вещью, пережившей свою эпоху. Он напоминает, что враг был реальным, хорошо вооружённым, и победа далась нелегко.",
+                        image: "img/photo_2025-09-30_20-04-19.jpg"
+                    }
+                ]
+            },
+            {
+                id: 3,
+                name: "Зал 1: Документы и память",
+                texture: "img/4.jpg",
+                hotspots: [
+                    { 
+                        title: "Карта освобождения Новгорода", 
+                        description: "Эта карта, хранящаяся в музее с 1974 года, была передана ветеранами фронта в память о героической операции по освобождению Новгорода. Она отображает расстановку войск, направления наступлений и ключевые точки сражений. Это не просто схема — это хроника победы, отражение стратегического мышления, мужества и крови. Этот подарок — свидетель уважения к подрастающему поколению, знак, что память должна передаваться из рук в руки, как знамя.",
+                        image: "img/photo_2025-09-30_19-41-03.jpg"
+                    },
+                    { 
+                        title: "Книги о партизанах", 
+                        description: "Переданные из Новгородского музея-заповедника, эти книги рассказывают о подпольной борьбе на оккупированной территории. Истории партизан — это истории мужества, тишины, неожиданного удара и веры в Победу. Эти издания передают уникальный дух сопротивления, локальную историю борьбы, столь важную для сохранения истины.",
+                        image: "img/photo_2025-09-30_20-00-21.jpg"
+                    },
+                    { 
+                        title: "Рисунки полководцев", 
+                        description: "Эти рисунки, выполненные учениками гимназии, стали живой иллюстрацией памяти. Каждый портрет — это не просто изображение, а взгляд в историю через глаза ребёнка. В них — уважение, исследование, попытка понять, кем были те, кто командовал, кто нёс ответственность за жизни миллионов. Искренние и трогательные, эти работы объединяют поколения.",
+                        image: "img/photo_2025-09-30_20-00-08.jpg"
+                    },
+                    { 
+                        title: "Фотография 1944 года", 
+                        description: "На этой фотографии запечатлён момент возвращения Новгорода. В 1944 году он был включён в список тридцати городов, подлежащих первоочередному восстановлению. Здесь — разрушенные дома, лица людей, первые шаги к возрождению. Этот снимок — документ надежды, переломный момент, когда ужас сменился строительством мира.",
+                        image: "img/photo_2025-09-30_20-00-17.jpg"
+                    },
+                    { 
+                        title: "Боевой листок «Боритесь по-ленинградски»", 
+                        description: "Боевой листок времён 1944 года стал вдохновляющим призывом для солдат. В нём — героизм защитников Ленинграда, призыв к стойкости и отваге. Эти листки передавались от руки к руке, поднимали дух, учили держаться. Они были оружием не менее важным, чем винтовка.",
+                        image: "img/photo_2025-09-30_20-00-21.jpg"
+                    }
+                ]
+            },
+            {
+                id: 4,
+                name: "Зал 1: Герои войны",
+                texture: "img/5.jpg",
+                hotspots: [
+                    { 
+                        title: "Личные вещи Ивана Плешева", 
+                        description: "Иван Николаевич Плешев — герой Советского Союза, участник взятия Кёнигсберга. Его корпус первым вошёл в город. В музее хранятся его сумка, пилотка, пулемётная лента, наградной лист, военный билет. Это не просто вещи — это свидетельства о человеке, который дошёл до самого сердца врага. Его звезда Героя, к сожалению, утеряна, но память — нет.",
+                        image: "img/photo_2025-09-30_19-41-00.jpg"
+                    },
+                    { 
+                        title: "Чалов Егор Михайлович", 
+                        description: "Чалов Егор Михайлович — лётчик, Герой Советского Союза, совершивший десятки успешных вылетов. Его вклад в победу неоценим. Он стал символом тех, кто в небе защищал землю. Его история — это рассказ о точности, смелости и преданности. Его имя — в списке бессмертных.",
+                        image: "img/photo_2025-09-30_20-00-21.jpg"
+                    },
+                    { 
+                        title: "Газетная вырезка о Кёнигсберге", 
+                        description: "Эта вырезка из фронтовой газеты рассказывает об операции по захвату Кёнигсберга, о героях тех дней. Это подлинный голос эпохи, взгляд с передовой. Такие статьи вдохновляли, сохраняли дух правды и гордости за своих бойцов.",
+                        image: "img/photo_2025-09-30_20-00-21.jpg"
+                    },
+                    { 
+                        title: "Книги памяти и венок славы", 
+                        description: "Сборники с рассказами о героях войны, документы, очерки, имена — всё это собрано в книгах памяти. Они были созданы для того, чтобы не исчезли ни судьбы, ни подвиги. Это венок славы тем, кто дал нам мир.",
+                        image: "img/photo_2025-09-30_20-00-17.jpg"
+                    },
+                    { 
+                        title: "Портрет Ивана Ивановича Сергунина", 
+                        description: "Иван Иванович Сергунин — комиссар 5-й Ленинградской партизанской бригады, Герой Советского Союза. Он руководил партизанскими операциями, поддерживал дух бойцов, вёл их в бой. Его портрет в музее — это образ лидера, защитника, вдохновителя. Это лицо мужества, воплощённого в человеке.",
+                        image: "img/photo_2025-09-30_20-00-08.jpg"
+                    }
+                ]
+            }
+        ];
+
+        let currentRoom = 0;
+        let sphere = null;
+
+        const loader = new THREE.TextureLoader();
+
+        camera.position.set(0, 0, 0.1);
+
+        let isUserInteracting = false;
+        let onPointerDownPointerX = 0;
+        let onPointerDownPointerY = 0;
+        let onPointerDownLon = 0;
+        let onPointerDownLat = 0;
+        let lon = 0;
+        let lat = 0;
+        let phi = 0;
+        let theta = 0;
+
+        function loadRoom(roomId) {
+    const overlay = document.getElementById('transition-overlay');
+    overlay.style.opacity = 1;
+    document.getElementById('loading').style.display = 'block';
+    
+    if (sphere) {
+        scene.remove(sphere);
+    }
+    
+    const room = rooms[roomId];
+    
+    const tempGeometry = new THREE.SphereGeometry(500, 60, 40);
+    const tempMaterial = new THREE.MeshBasicMaterial({
+        color: 0x333333,
+        side: THREE.BackSide
+    });
+    sphere = new THREE.Mesh(tempGeometry, tempMaterial);
+    scene.add(sphere);
+    
+    loader.load(
+        room.texture,
+        // onLoad callback
+        function(texture) {
+            texture.minFilter = THREE.LinearFilter;
+            
+            const geometry = new THREE.SphereGeometry(500, 60, 40);
+            const material = new THREE.MeshBasicMaterial({
+                map: texture,
+                side: THREE.BackSide
+            });
+            scene.remove(sphere);
+            sphere = new THREE.Mesh(geometry, material);
+            scene.add(sphere);
+            
+            document.getElementById('loading').style.display = 'none';
+            
+            setTimeout(() => {
+                overlay.style.opacity = 0;
+            }, 500);
+        },
+        function(xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% загружено');
+        },
+        function(error) {
+            console.error('Ошибка загрузки текстуры:', error);
+            console.log('Путь:', room.texture);
+            document.getElementById('loading').style.display = 'none';
+            
+            setTimeout(() => {
+                overlay.style.opacity = 0;
+            }, 500);
+        }
+    );
+    
+    currentRoom = roomId;
+    updateNavigationButtons();
+    }
+
+        function createLibrary() {
+            const libraryGrid = document.getElementById('library-grid');
+            libraryGrid.innerHTML = '';
+            
+            let allExhibits = [];
+            rooms.forEach(room => {
+                room.hotspots.forEach(hotspot => {
+                    allExhibits.push({
+                        title: hotspot.title,
+                        description: hotspot.description,
+                        room: room.name,
+                        roomId: room.id,
+                        image: hotspot.image
+                    });
+                });
+            });
+            
+            allExhibits.forEach((exhibit, index) => {
+                const exhibitItem = document.createElement('div');
+                exhibitItem.className = 'exhibit-item';
+                
+                const exhibitImage = document.createElement('div');
+                exhibitImage.className = 'exhibit-image';
+                
+                if (exhibit.image) {
+                    const img = document.createElement('img');
+                    img.src = exhibit.image;
+                    img.alt = exhibit.title;
+                    img.onerror = function() {
+                        exhibitImage.innerHTML = exhibit.title;
+                        exhibitImage.style.display = 'flex';
+                        exhibitImage.style.alignItems = 'center';
+                        exhibitImage.style.justifyContent = 'center';
+                        exhibitImage.style.color = 'white';
+                        exhibitImage.style.fontSize = '14px';
+                        exhibitImage.style.background = 'linear-gradient(45deg, #8b4513, #a0522d)';
+                    };
+                    
+                    exhibitImage.appendChild(img);
+                } else {
+                    exhibitImage.innerHTML = exhibit.title;
+                    exhibitImage.style.display = 'flex';
+                    exhibitImage.style.alignItems = 'center';
+                    exhibitImage.style.justifyContent = 'center';
+                    exhibitImage.style.color = 'white';
+                    exhibitImage.style.fontSize = '14px';
+                    exhibitImage.style.background = 'linear-gradient(45deg, #8b4513, #a0522d)';
+                }
+                
+                exhibitItem.appendChild(exhibitImage);
+                
+                const exhibitTitle = document.createElement('div');
+                exhibitTitle.className = 'exhibit-title';
+                exhibitTitle.textContent = exhibit.title;
+                exhibitItem.appendChild(exhibitTitle);
+                
+                const exhibitRoom = document.createElement('div');
+                exhibitRoom.className = 'exhibit-room';
+                exhibitRoom.textContent = exhibit.room;
+                exhibitItem.appendChild(exhibitRoom);
+                
+                exhibitItem.addEventListener('click', () => {
+                    showExhibitDetail(exhibit);
+                });
+                
+                libraryGrid.appendChild(exhibitItem);
+            });
+        }
+
+        function showExhibitDetail(exhibit) {
+            document.getElementById('exhibit-detail-title').textContent = exhibit.title;
+            document.getElementById('exhibit-detail-description').textContent = exhibit.description;
+            document.getElementById('exhibit-detail-room').textContent = `Зал: ${exhibit.room}`;
+            
+            const exhibitImage = document.getElementById('exhibit-detail-image');
+            if (exhibit.image) {
+                exhibitImage.src = exhibit.image;
+                exhibitImage.alt = exhibit.title;
+                exhibitImage.style.display = 'block';
+                
+                exhibitImage.onerror = function() {
+                    exhibitImage.style.display = 'none';
+                };
+            } else {
+                exhibitImage.style.display = 'none';
+            }
+            
+            document.getElementById('exhibit-detail-panel').style.display = 'block';
+        }
+
+        function updateNavigationButtons() {
+            document.getElementById('prev-btn').disabled = currentRoom === 0;
+            document.getElementById('next-btn').disabled = currentRoom === rooms.length - 1;
+        }
+
+        function onDocumentMouseDown(event) {
+            event.preventDefault();
+            
+            isUserInteracting = true;
+            
+            onPointerDownPointerX = event.clientX;
+            onPointerDownPointerY = event.clientY;
+            
+            onPointerDownLon = lon;
+            onPointerDownLat = lat;
+        }
+
+        function onDocumentMouseMove(event) {
+            if (isUserInteracting) {
+                lon = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownLon;
+                lat = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
+            }
+        }
+
+        function onDocumentMouseUp() {
+            isUserInteracting = false;
+        }
+
+        function onDocumentMouseWheel(event) {
+            camera.fov += event.deltaY * 0.05;
+            camera.fov = Math.max(40, Math.min(100, camera.fov));
+            camera.updateProjectionMatrix();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (!isUserInteracting) {
+                lon += 0.05;
+            }
+            
+            lat = Math.max(-85, Math.min(85, lat));
+            
+            phi = THREE.MathUtils.degToRad(90 - lat);
+            theta = THREE.MathUtils.degToRad(lon);
+            
+            camera.position.x = 100 * Math.sin(phi) * Math.cos(theta);
+            camera.position.y = 100 * Math.cos(phi);
+            camera.position.z = 100 * Math.sin(phi) * Math.sin(theta);
+            
+            camera.lookAt(scene.position);
+            
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', function() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        document.addEventListener('mousedown', onDocumentMouseDown);
+        document.addEventListener('mousemove', onDocumentMouseMove);
+        document.addEventListener('mouseup', onDocumentMouseUp);
+        document.addEventListener('wheel', onDocumentMouseWheel);
+
+        document.getElementById('close-btn').addEventListener('click', function() {
+            document.getElementById('info-panel').style.display = 'none';
+        });
+
+        document.getElementById('prev-btn').addEventListener('click', function() {
+            if (currentRoom > 0) {
+                loadRoom(currentRoom - 1);
+            }
+        });
+
+        document.getElementById('next-btn').addEventListener('click', function() {
+            if (currentRoom < rooms.length - 1) {
+                loadRoom(currentRoom + 1);
+            }
+        });
+
+        document.getElementById('outro-btn').addEventListener('click', function() {
+            document.getElementById('outro-panel').style.display = 'block';
+        });
+
+        document.getElementById('start-btn').addEventListener('click', function() {
+            document.getElementById('intro-panel').style.display = 'none';
+            loadRoom(0);
+        });
+
+        document.getElementById('restart-btn').addEventListener('click', function() {
+            document.getElementById('outro-panel').style.display = 'none';
+            document.getElementById('intro-panel').style.display = 'block';
+            currentRoom = 0;
+        });
+
+        document.getElementById('library-btn').addEventListener('click', function() {
+            createLibrary();
+            document.getElementById('library-panel').style.display = 'block';
+        });
+
+        document.getElementById('library-close-btn').addEventListener('click', function() {
+            document.getElementById('library-panel').style.display = 'none';
+        });
+
+        document.getElementById('exhibit-close-btn').addEventListener('click', function() {
+            document.getElementById('exhibit-detail-panel').style.display = 'none';
+        });
+
+        loadRoom(0);
+
+        animate();
+    </script>
 </body>
 </html>
